@@ -132,7 +132,7 @@ def grafico2():
   plt.figure(figsize = (10,8))
   plt.title("Agrupamiento de Clientes por Segmentos")
   plt.xlabel('m_score = Valor Promedio de la Compra (R$)') 
-  plt.ylabel('f_score = Frecuencia de compras del cliente') 
+  plt.ylabel('r_score = Días de la última compra') 
   sns.scatterplot(x = x_axis, y = y_axis, hue = segment,
                   palette = 'Set2', legend = 'full')
   st.pyplot(plt)

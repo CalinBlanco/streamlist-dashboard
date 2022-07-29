@@ -70,17 +70,17 @@ def distance(df):
     
     alt.data_transformers.disable_max_rows()
     boxplot = alt.Chart(sellers_customers_by_state, background="transparent").mark_boxplot(outliers={'size':3}).encode(
-        alt.X('seller_state_name:O', axis=alt.Axis(title='State')),
+        alt.X('seller_state_name:O', axis=alt.Axis(title='Estado')),
         alt.Y('distance:Q'),
         color=alt.Color('seller_state_name', legend=None)
-    ).properties(
+    ).interactive().properties(
         width=800,
         title="Distancias de Entrega Entre Estados"
     )
 
     violin = alt.Chart(sellers_customers_by_state, background="transparent").transform_density(
         'distance',
-        as_=['Distance(Km)', 'density'],
+        as_=['Distance', 'density'],
         extent=[0, 4000],
         groupby=['seller_state_name']
     ).mark_area(orient='horizontal').encode(
@@ -126,8 +126,8 @@ def total_freight(df):
     freight = value_freight(df)[1]
 
     grafico_2 = alt.Chart(freight, background="transparent").mark_line().encode(
-        alt.X('order_purchase_timestamp:T', axis=alt.Axis(title='Date')),
-        alt.Y('freight_value:Q', axis=alt.Axis(title='Total Freight')),
+        alt.X('order_purchase_timestamp:T', axis=alt.Axis(title='Meses')),
+        alt.Y('freight_value:Q', axis=alt.Axis(title='Total Freight(R$)')),
         color='seller_state_name',
         strokeDash='seller_state_name',
         tooltip=['seller_state_name']

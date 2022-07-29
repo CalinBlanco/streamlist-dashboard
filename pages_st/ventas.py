@@ -1,3 +1,4 @@
+from matplotlib.pyplot import xlabel
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -51,7 +52,7 @@ def run():
 
     ## ! Gráfico 1: Ingresos Mensuales vs Número de Órdenes Mensuales
     
-    tabla_1 = data_final.loc[(data_final.purchase_year.isin(st.session_state.selected_options_year)) & data_final.purchase_month_name.isin(st.session_state.selected_options_month)].groupby("purchase_year_month")["payment_value"].agg(["count","sum"], axis="columns").reset_index().sort_values("purchase_year_month", ascending=False)
+    tabla_1 = data_final.loc[(data_final.purchase_year.isin(st.session_state.selected_options_year)) & data_final.purchase_month_name.isin(st.session_state.selected_options_month)&(data_final['order_status']=='delivered')].groupby("purchase_year_month")["payment_value"].agg(["count","sum"], axis="columns").reset_index().sort_values("purchase_year_month", ascending=False)
         
     fig_1 = make_subplots(specs=[[{"secondary_y": True}]])
     # Add figure title
@@ -82,8 +83,8 @@ def run():
     # Set x-axis title
     fig_1.update_xaxes(title_text="Meses",tickangle=-30)
     # Set y-axis title
-    fig_1.update_yaxes(title_text="Ingresos", secondary_y=False)
-    fig_1.update_yaxes(title_text="Órdenes", secondary_y=True)
+    fig_1.update_yaxes(title_text="Ingresos(R$)", secondary_y=False)
+    fig_1.update_yaxes(title_text="# Órdenes", secondary_y=True)
     # fig_1.show()
     col1.plotly_chart(fig_1, use_container_width=True)
 
@@ -128,23 +129,6 @@ def run():
         )
     )
 
-    # fig_2 = px.bar(tabla_2, x='status', y='percentage')
-    # fig_2.update_xaxes(title_text="Estado de Órdenes")
-    # fig_2.update_yaxes(title_text="%")
-    # fig_2.update_layout(
-    #     title="Porcentaje de Estados de Órdenes",
-    #     hovermode='x unified',
-    #     paper_bgcolor='rgba(0,0,0,0)',
-    #     plot_bgcolor='rgba(0,0,0,0)',
-    #     font_color='black',
-    #     hoverlabel=dict(
-    #         bgcolor="black",
-    #         font_size=12,
-    #         font_color="black"
-    #         # font_family="Rockwell"
-    #     )
-    # )
-    # fig_2.update_traces(marker_color='LightSeaGreen')
     col2.plotly_chart(fig_2, use_container_width=True)
     tabla_2_csv = util.convert_df(tabla_2)
     col2.download_button(
@@ -202,7 +186,7 @@ def run():
     ## ! Gráfico 4: Ingresos de los Top 10 Categoría de Productos
     top_categ_by_revenue = data_final.loc[(data_final.purchase_year.isin(st.session_state.selected_options_year)) & data_final.purchase_month_name.isin(st.session_state.selected_options_month)].groupby("product_category_name").agg({'order_id':'nunique','payment_value':'sum'}).sort_values("payment_value", ascending=False)
     top_categ_by_revenue.rename(columns={"order_id":"NumOfOrders", "payment_value":"Revenues"}, inplace=True)
-    top_categ_by_revenue = top_categ_by_revenue[:10].reset_index()
+    top_categ_by_revenue = top_categ_by_revenue[:5].reset_index()
     top_categ_by_revenue = top_categ_by_revenue.sort_values('Revenues',ascending=True)
     top_categ_by_revenue['product_category_name'] = top_categ_by_revenue['product_category_name'].apply(lambda x : x.capitalize().replace('_'," "))
 
@@ -216,9 +200,14 @@ def run():
         orientation='h'
     ),1,1)
 
+    fig_4.update_xaxes(title_text="Ingresos(R$)")
+    fig_4.update_yaxes(title_text="Categorías")
+
     fig_4.update_layout(
-        title='Ingresos de los Top 10 Categoría de Productos',
+        title='Ingresos de los Top 5 Categoría de Productos',
         hovermode='y unified',
+        # xlabel="Ingresos(R$)",
+        # ylabel="Categorías",
         legend=dict(x=0.029, y=1.038, font_size=50),
         margin=dict(l=150, r=20, t=60, b=50),
         plot_bgcolor= 'rgba(0, 0, 0, 0)',
@@ -313,21 +302,6 @@ def value_and_freight(df):
     df = filter(df)
 
     value, freight, merge_value_freight = value_freight_1(df)
-
-    # line1 = alt.Chart(freight).mark_line(stroke='red').encode(
-    #     alt.X('order_purchase_timestamp:T', axis=alt.Axis(title='Date')),
-    #     alt.Y('freight_value:Q', axis=alt.Axis(title='Total freight')),
-    #     tooltip=['order_purchase_timestamp', 'freight_value']
-    # ).interactive()
-
-    # line2 = alt.Chart(value).mark_line(stroke='blue').encode(
-    #     alt.X('order_purchase_timestamp:T', axis=alt.Axis(title='Date')),
-    #     alt.Y('payment_value:Q', axis=alt.Axis(title='Total sells')),
-    #     tooltip=['order_purchase_timestamp', 'payment_value']
-    # ).interactive()
-
-    # return alt.layer(line2, line1, background="transparent").resolve_scale(y='independent').configure_view(stroke=None).properties(title="Comportamiento de Ventas con Costo de Distribución")
-
 # ======================================================================= 
     fig_1 = make_subplots(specs=[[{"secondary_y": True}]])
     # Add figure title
@@ -346,11 +320,11 @@ def value_and_freight(df):
     )
     # Add traces
     fig_1.add_trace(
-        go.Scatter(x=list(freight['order_purchase_timestamp']), y=list(freight['freight_value']), name="Total freight",mode="lines+markers",marker=dict(size=5, color="#d4ad00")),
+        go.Scatter(x=list(freight['order_purchase_timestamp']), y=list(freight['freight_value']), name="Total freight(R$)",mode="lines+markers",marker=dict(size=5, color="#d4ad00")),
         secondary_y=False,
     )
     fig_1.add_trace(
-        go.Scatter(x=list(value['order_purchase_timestamp']), y=list(value['payment_value']), name="Total sells",mode="lines+markers",marker=dict(size=5, color="LightSeaGreen")),
+        go.Scatter(x=list(value['order_purchase_timestamp']), y=list(value['payment_value']), name="Total sells(R$)",mode="lines+markers",marker=dict(size=5, color="LightSeaGreen")),
         secondary_y=True,
     )
     fig_1['layout']['yaxis1']['showgrid'] = False
@@ -358,8 +332,8 @@ def value_and_freight(df):
     # Set x-axis title
     fig_1.update_xaxes(title_text="Meses",tickangle=-30)
     # Set y-axis title
-    fig_1.update_yaxes(title_text="Total freight", secondary_y=False)
-    fig_1.update_yaxes(title_text="Total sells", secondary_y=True)
+    fig_1.update_yaxes(title_text="Total freight(R$)", secondary_y=False)
+    fig_1.update_yaxes(title_text="Total sells(R$)", secondary_y=True)
     # fig_1.show()
     st.plotly_chart(fig_1, use_container_width=True)
 
@@ -399,12 +373,12 @@ def sells_total_and_seller(df):
 )
 
     line1 = base.mark_bar(opacity=0.5).encode(
-        alt.Y('sells_by_seller:Q', axis=alt.Axis(title='Sells by Seller')),
+        alt.Y('sells_by_seller:Q', axis=alt.Axis(title='Sells by Seller(R$)')),
         tooltip=[alt.Tooltip('seller_state_name', title='Seller State'), alt.Tooltip('total_sells', title='Total Sells'), alt.Tooltip('sells_by_seller', title='Sells by Seller'), alt.Tooltip('total_sellers', title='Total Sellers')]
     )
 
     line2 = base.mark_bar(color='red', opacity=0.3).encode(
-        alt.Y('total_sells:Q', axis=alt.Axis(title='Total Sells')),
+        alt.Y('total_sells:Q', axis=alt.Axis(title='Total Sells(R$)')),
         tooltip=[alt.Tooltip('seller_state_name', title='Seller State'), alt.Tooltip('total_sells', title='Total Sells'), alt.Tooltip('sells_by_seller', title='Sells by Seller'), alt.Tooltip('total_sellers', title='Total Sellers')]
     )
 
@@ -429,7 +403,7 @@ def total_value(df):
 
     grafico_8 = alt.Chart(value, background="transparent").mark_line().encode(
         alt.X('order_purchase_timestamp:T', axis=alt.Axis(title='Date')),
-        alt.Y('payment_value:Q', axis=alt.Axis(title='Total Sales')),
+        alt.Y('payment_value:Q', axis=alt.Axis(title='Total Sales(R$)')),
         color='seller_state_name',
         strokeDash='seller_state_name',
         tooltip='seller_state_name'
