@@ -5,11 +5,9 @@ folium
 geopandas
 geopy
 matplotlib
-nbformat
 numpy
 pandas
 Pillow
-plost
 plotly
 scikit_learn
 seaborn
