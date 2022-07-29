@@ -1,7 +1,5 @@
-from matplotlib.pyplot import title
 import streamlit as st
 import pandas as pd
-# from application import conn_aws as cn
 import altair as alt
 from geopy import distance as dis
 

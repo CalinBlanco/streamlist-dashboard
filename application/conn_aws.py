@@ -4,8 +4,6 @@ import pandas as pd
 import boto3
 from fastparquet import ParquetFile
 
-from application import session_state_vars as ssv
-
 ## ================================================================================================================
 ## Leyendo la fuente de datos
 

@@ -1,5 +1,5 @@
 import streamlit as st
-from pages_st import ventas, pagos, distribucion,tiempos, vendedores, geolocalizacion, machine_learning, segmentacion
+from pages_st import ventas, distribucion, geolocalizacion, machine_learning, segmentacion
 
 
 def run():

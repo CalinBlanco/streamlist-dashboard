@@ -1,6 +1,5 @@
 import streamlit as st
 from application import conn_aws as cn
-import pandas as pd
 ## ******** Extrayendo meses del dataset(data_final.csv) y los muestra ordenado
 
 # data_final = con.run()

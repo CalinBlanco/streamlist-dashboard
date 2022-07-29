@@ -1,11 +1,8 @@
 import streamlit as st
-from application import conn_aws as cn
-import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import seaborn as sns
-import plotly.express as px
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 

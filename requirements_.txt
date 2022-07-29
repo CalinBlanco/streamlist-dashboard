@@ -1,0 +1,16 @@
+altair==4.2.0
+boto3
+fastparquet
+folium
+geopandas
+geopy
+matplotlib
+numpy
+pandas
+Pillow
+plotly
+scikit_learn
+seaborn
+streamlit
+streamlit_folium
+streamlit_option_menu

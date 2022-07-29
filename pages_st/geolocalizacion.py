@@ -1,15 +1,14 @@
 import streamlit as st
 import folium
 import geopandas as gpd
-from application import conn_csv as cn_csv
+from application import conn_aws as cn
 from streamlit_folium import folium_static
 
 import altair as alt
 import pandas as pd
-import numpy as np
 
 def run():
-    cn_csv.run()
+    cn.run()
     st.markdown("## Mapa de Georeferenciación")
     data_final = st.session_state.data_final
     # data_final = st.session_state.data_final_csv
@@ -43,7 +42,7 @@ def run():
                 tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}',
                 attr='My Data Attribution')
 
-    states = gpd.read_file("../pruebas/brazil-states.geojson")
+    states = gpd.read_file("data/brazil-states.geojson")
     state_poly = states[['sigla','geometry']]
     df_definitivo = state_poly.merge(state_revenue_map, left_on='sigla', right_on='seller_state', how='outer')
     df_definitivo.loc[df_definitivo['percentage'].isna(),'percentage'] = 0.0
