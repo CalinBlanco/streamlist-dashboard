@@ -2,8 +2,6 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 from PIL import Image
 
-from application import routes as route
-
 from kpi_names import ST_KPI
 
 ## ******** Diccionario que me permite llamar a las funciones de las páginas
