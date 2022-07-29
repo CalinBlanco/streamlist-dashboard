@@ -41,12 +41,12 @@ def value_freight(df):
 
     df = filter(df)
     
-    sales_state = df.loc[:,['order_id', 'payment_value', 'freight_value', 'seller_state', 'order_purchase_timestamp', 'order_status']]
+    sales_state = df.loc[:,['order_id', 'payment_value', 'freight_value', 'seller_state','seller_state_name', 'order_purchase_timestamp', 'order_status']]
     sales_state = sales_state[sales_state['order_status'] == 'delivered']
     sales_state.drop_duplicates(inplace=True)
     sales_state['order_purchase_timestamp'] = sales_state['order_purchase_timestamp'].astype('datetime64[ns]').apply(lambda x: x.strftime('%Y-%m'))
-    total_value = sales_state.loc[:,['order_purchase_timestamp', 'seller_state', 'payment_value']].groupby(['order_purchase_timestamp', 'seller_state']).sum().reset_index().sort_values('order_purchase_timestamp')
-    total_freight = sales_state.loc[:,['order_purchase_timestamp', 'seller_state', 'freight_value']].groupby(['order_purchase_timestamp', 'seller_state']).sum().reset_index().sort_values('order_purchase_timestamp')
+    total_value = sales_state.loc[:,['order_purchase_timestamp', 'seller_state','seller_state_name', 'payment_value']].groupby(['order_purchase_timestamp', 'seller_state','seller_state_name']).sum().reset_index().sort_values('order_purchase_timestamp')
+    total_freight = sales_state.loc[:,['order_purchase_timestamp', 'seller_state','seller_state_name', 'freight_value']].groupby(['order_purchase_timestamp', 'seller_state','seller_state_name']).sum().reset_index().sort_values('order_purchase_timestamp')
     return total_value, total_freight
 
 def review_state(df, state):
@@ -61,18 +61,18 @@ def distance(df):
     
     df = filter(df)
 
-    sellers_customers = df.loc[:,['seller_id', 'seller_state', 'seller_geolocation_lat', 'seller_geolocation_lng', 'customer_id', 'customer_state_name', 'customer_geoloction_lat', 'customer_geolocation_lng']].drop_duplicates()
-    sellers_customers = sellers_customers[sellers_customers['seller_state'] != sellers_customers['customer_state_name']].dropna()
+    sellers_customers = df.loc[:,['seller_id', 'seller_state','seller_state_name', 'seller_geolocation_lat', 'seller_geolocation_lng', 'customer_id','customer_state', 'customer_state_name', 'customer_geoloction_lat', 'customer_geolocation_lng']].drop_duplicates()
+    sellers_customers = sellers_customers[sellers_customers['seller_state'] != sellers_customers['customer_state']].dropna()
     sellers_customers['distance'] = sellers_customers.loc[:,['seller_geolocation_lat', 'seller_geolocation_lng', 'customer_geoloction_lat', 'customer_geolocation_lng']].apply(lambda x: dis.distance((x[0], x[1]), (x[2], x[3])), axis=1)
     sellers_customers['distance'] = sellers_customers['distance'].apply(lambda x: round(x.km,2))
-    sellers_customers_by_state = sellers_customers.loc[:,['seller_state', 'distance']]
+    sellers_customers_by_state = sellers_customers.loc[:,['seller_state','seller_state_name', 'distance']]
     sellers_customers_by_state = sellers_customers_by_state[sellers_customers_by_state['distance'] < 4000]
     
     alt.data_transformers.disable_max_rows()
     boxplot = alt.Chart(sellers_customers_by_state, background="transparent").mark_boxplot(outliers={'size':3}).encode(
-        alt.X('seller_state:O', axis=alt.Axis(title='State')),
+        alt.X('seller_state_name:O', axis=alt.Axis(title='State')),
         alt.Y('distance:Q'),
-        color=alt.Color('seller_state', legend=None)
+        color=alt.Color('seller_state_name', legend=None)
     ).properties(
         width=800,
         title="Distancias de Entrega Entre Estados"
@@ -82,10 +82,10 @@ def distance(df):
         'distance',
         as_=['Distance(Km)', 'density'],
         extent=[0, 4000],
-        groupby=['seller_state']
+        groupby=['seller_state_name']
     ).mark_area(orient='horizontal').encode(
         y='Distance(Km):Q',
-        color='seller_state:N',
+        color='seller_state_name:N',
         x=alt.X(
             'density:Q',
             stack='center',
@@ -94,7 +94,7 @@ def distance(df):
             axis=alt.Axis(labels=False, values=[0],grid=False, ticks=True),
         ),
         column=alt.Column(
-            'seller_state:N',
+            'seller_state_name:N',
             header=alt.Header(
                 titleOrient='bottom',
                 labelOrient='bottom',
@@ -125,12 +125,12 @@ def total_freight(df):
 
     freight = value_freight(df)[1]
 
-    grafico_2 = alt.Chart(freight).mark_line().encode(
+    grafico_2 = alt.Chart(freight, background="transparent").mark_line().encode(
         alt.X('order_purchase_timestamp:T', axis=alt.Axis(title='Date')),
         alt.Y('freight_value:Q', axis=alt.Axis(title='Total Freight')),
-        color='seller_state',
-        strokeDash='seller_state',
-        tooltip=['seller_state']
+        color='seller_state_name',
+        strokeDash='seller_state_name',
+        tooltip=['seller_state_name']
     ).interactive().properties(title="Evolución de Gastos de Flete por Estado")
     st.altair_chart(grafico_2, use_container_width=True)
 
@@ -146,7 +146,7 @@ def total_freight(df):
 def average_delivery(df):
 
     df_delivered = load_delivery(df)
-    total_delivered_real = df_delivered.loc[:,['seller_state', 'delta_estimated_real']].groupby('seller_state').count().reset_index()
+    total_delivered_real = df_delivered.loc[:,['seller_state','seller_state_name', 'delta_estimated_real']].groupby(['seller_state','seller_state_name']).count().reset_index()
     total_delivered_real.rename(columns={'delta_estimated_real':'total_delivered_real'}, inplace=True)
     ontime_delivered_real = df_delivered[df_delivered['delta_estimated_real'] > 1].loc[:,['seller_state', 'delta_estimated_real']].groupby('seller_state').count().reset_index()
     delivered_real = pd.merge(ontime_delivered_real, total_delivered_real, on='seller_state', how='left')
@@ -155,14 +155,14 @@ def average_delivery(df):
     delivered_real['delivered_real_percentage'] = delivered_real['delivered_real_percentage'].apply(lambda x: round(x,2))
     
     points = alt.Chart(delivered_real).mark_point(filled=True, size=80, color='black').encode(
-        alt.X('seller_state', title='Seller State'),
+        alt.X('seller_state_name', title='Seller State'),
         alt.Y('delivered_real_percentage', title='On time delivery (%)', scale=alt.Scale(zero=False)),
     ).interactive()
 
     line = alt.Chart(delivered_real).mark_line(stroke='red').transform_joinaggregate(
         mean_delivered_real='mean(delivered_real_percentage)'
     ).encode(
-        alt.X('seller_state', title='Seller State'),
+        alt.X('seller_state_name', title='Seller State'),
         alt.Y('mean_delivered_real:Q', title='On time delivery (%)', scale=alt.Scale(zero=False)),
     )
 
@@ -181,7 +181,7 @@ def average_delivery(df):
 
 def load_delivery(df):
     df = filter(df)
-    df_delivery = df.loc[:,['order_id', 'seller_state', 'order_status', 'order_purchase_timestamp', 'purchase_date', 'order_delivered_carrier_date', 'delivered_carrier_date', 'order_delivered_customer_date', 'delivered_customer_date', 'order_estimated_delivery_date', 'estimated_delivery_date']]
+    df_delivery = df.loc[:,['order_id', 'seller_state','seller_state_name', 'order_status', 'order_purchase_timestamp', 'purchase_date', 'order_delivered_carrier_date', 'delivered_carrier_date', 'order_delivered_customer_date', 'delivered_customer_date', 'order_estimated_delivery_date', 'estimated_delivery_date']]
     df_delivered = df_delivery[df_delivery['order_status']=='delivered']
     df_delivered.loc[:,'delta_estimated_real'] = df_delivered.loc[:,'estimated_delivery_date'].astype('datetime64[ns]') - df_delivered.loc[:,'delivered_customer_date'].astype('datetime64[ns]')
     df_delivered.loc[:,'delta_purchase_delivered'] = df_delivered.loc[:,'delivered_customer_date'].astype('datetime64[ns]') - df_delivered.loc[:,'purchase_date'].astype('datetime64[ns]')

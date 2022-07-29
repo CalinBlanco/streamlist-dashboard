@@ -380,30 +380,32 @@ def sells_total_and_seller(df):
     
     df = filter(df)
 
-    orders = df.loc[:,['order_id', 'order_item_id', 'seller_id', 'seller_state', 'price', 'customer_id']].drop_duplicates()
-    sellers_by_state = orders.loc[:,['seller_id', 'seller_state']].drop_duplicates().groupby('seller_state').count().reset_index()
+    orders = df.loc[:,['order_id', 'order_item_id', 'seller_id', 'seller_state','seller_state_name', 'price', 'customer_id']].drop_duplicates()
+    sellers_by_state = orders.loc[:,['seller_id', 'seller_state','seller_state_name']].drop_duplicates().groupby(['seller_state','seller_state_name']).count().reset_index()
     sellers_by_state.rename(columns={'seller_id':'total_sellers'}, inplace=True)
-    sells_by_state = orders.loc[:,['price', 'seller_state']].groupby('seller_state').sum().reset_index()
+    sells_by_state = orders.loc[:,['price', 'seller_state','seller_state_name']].groupby(['seller_state','seller_state_name']).sum().reset_index()
     sells_by_state.rename(columns={'price':'total_sells'}, inplace=True)
-    total_orders_by_seller_by_state = orders.loc[:,['seller_state', 'order_id']].groupby(['seller_state']).count().reset_index()
+    total_orders_by_seller_by_state = orders.loc[:,['seller_state','seller_state_name', 'order_id']].groupby(['seller_state','seller_state_name']).count().reset_index()
     total_orders_by_seller_by_state.rename(columns={'order_id':'total_orders'}, inplace=True)
     sells_by_state_seller = pd.merge(sellers_by_state, sells_by_state, on='seller_state')
     sells_by_state_seller = pd.merge(sells_by_state_seller, total_orders_by_seller_by_state, on='seller_state')
+    sells_by_state_seller.drop(columns=['seller_state_name_x','seller_state_name_y'], inplace=True)
     sells_by_state_seller['sells_by_seller'] = sells_by_state_seller['total_sells']/sells_by_state_seller['total_sellers']
     sells_by_state_seller['sells_by_seller'] = sells_by_state_seller['sells_by_seller'].apply(lambda x: round(x,2))
+    sells_by_state_seller
 
     base = alt.Chart(sells_by_state_seller).encode(
-    alt.X('seller_state:O', axis=alt.Axis(title='State'))
+    alt.X('seller_state_name:O', axis=alt.Axis(title='State'))
 )
 
     line1 = base.mark_bar(opacity=0.5).encode(
         alt.Y('sells_by_seller:Q', axis=alt.Axis(title='Sells by Seller')),
-        tooltip=[alt.Tooltip('seller_state', title='Seller State'), alt.Tooltip('total_sells', title='Total Sells'), alt.Tooltip('sells_by_seller', title='Sells by Seller'), alt.Tooltip('total_sellers', title='Total Sellers')]
+        tooltip=[alt.Tooltip('seller_state_name', title='Seller State'), alt.Tooltip('total_sells', title='Total Sells'), alt.Tooltip('sells_by_seller', title='Sells by Seller'), alt.Tooltip('total_sellers', title='Total Sellers')]
     )
 
     line2 = base.mark_bar(color='red', opacity=0.3).encode(
         alt.Y('total_sells:Q', axis=alt.Axis(title='Total Sells')),
-        tooltip=[alt.Tooltip('seller_state', title='Seller State'), alt.Tooltip('total_sells', title='Total Sells'), alt.Tooltip('sells_by_seller', title='Sells by Seller'), alt.Tooltip('total_sellers', title='Total Sellers')]
+        tooltip=[alt.Tooltip('seller_state_name', title='Seller State'), alt.Tooltip('total_sells', title='Total Sells'), alt.Tooltip('sells_by_seller', title='Sells by Seller'), alt.Tooltip('total_sellers', title='Total Sellers')]
     )
 
     grafico_7 = alt.layer(line2, line1, background="transparent").resolve_scale(y='independent').interactive().properties(title="Comparativa de Igresos por Estado y Promedio de Ingresos por Vendedor")
@@ -428,9 +430,9 @@ def total_value(df):
     grafico_8 = alt.Chart(value, background="transparent").mark_line().encode(
         alt.X('order_purchase_timestamp:T', axis=alt.Axis(title='Date')),
         alt.Y('payment_value:Q', axis=alt.Axis(title='Total Sales')),
-        color='seller_state',
-        strokeDash='seller_state',
-        tooltip=['seller_state']
+        color='seller_state_name',
+        strokeDash='seller_state_name',
+        tooltip='seller_state_name'
     ).interactive().properties(title="Evolución de Ventas por Estado")
 
     st.altair_chart(grafico_8, use_container_width=True)
@@ -446,17 +448,17 @@ def total_value(df):
 
 def value_freight(df):
     # df = filter(df)
-    sales_state = df.loc[:,['order_id', 'payment_value', 'freight_value', 'seller_state', 'order_purchase_timestamp', 'order_status']]
+    sales_state = df.loc[:,['order_id', 'payment_value', 'freight_value', 'seller_state','seller_state_name', 'order_purchase_timestamp', 'order_status']]
     sales_state = sales_state[sales_state['order_status'] == 'delivered']
     sales_state.drop_duplicates(inplace=True)
     sales_state['order_purchase_timestamp'] = sales_state['order_purchase_timestamp'].apply(lambda x: x.strftime('%Y-%m'))
-    total_value = sales_state.loc[:,['order_purchase_timestamp', 'seller_state', 'payment_value']].groupby(['order_purchase_timestamp', 'seller_state']).sum().reset_index().sort_values('order_purchase_timestamp')
-    total_freight = sales_state.loc[:,['order_purchase_timestamp', 'seller_state', 'freight_value']].groupby(['order_purchase_timestamp', 'seller_state']).sum().reset_index().sort_values('order_purchase_timestamp')
+    total_value = sales_state.loc[:,['order_purchase_timestamp', 'seller_state','seller_state_name', 'payment_value']].groupby(['order_purchase_timestamp', 'seller_state','seller_state_name']).sum().reset_index().sort_values('order_purchase_timestamp')
+    total_freight = sales_state.loc[:,['order_purchase_timestamp', 'seller_state','seller_state_name', 'freight_value']].groupby(['order_purchase_timestamp', 'seller_state','seller_state_name']).sum().reset_index().sort_values('order_purchase_timestamp')
     return total_value, total_freight
 
 def value_freight_1(df):
     # df = filter(df)
-    sales_state = df.loc[:,['order_id', 'payment_value', 'freight_value', 'seller_state', 'order_purchase_timestamp', 'order_status']]
+    sales_state = df.loc[:,['order_id', 'payment_value', 'freight_value', 'seller_state','seller_state_name', 'order_purchase_timestamp', 'order_status']]
     sales_state = sales_state[sales_state['order_status'] == 'delivered']
     sales_state.drop_duplicates(inplace=True)
     sales_state['order_purchase_timestamp'] = sales_state['order_purchase_timestamp'].apply(lambda x: x.strftime('%Y-%m'))
