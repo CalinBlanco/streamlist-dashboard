@@ -6,7 +6,6 @@ from geopy import distance as dis
 from application import utils as util
 
 def run():
-  # st.markdown("## Página Distribución")
   df = st.session_state.data_final
 
   ## ******** Insertamos cada métrica en su componente
@@ -14,19 +13,14 @@ def run():
 
   delivery = load_delivery(df)
 
-#   a1.metric('Promedio de diferencia entre estimado y real', '{0:.2g}'.format(delivery['delta_estimated_real'].mean()))
-#   a2.metric('Tiempo de entregas a tiempo promedio', '{0:.2g}'.format(delivery[delivery['delta_estimated_real'] >= 0]['delta_estimated_real'].mean()))
-#   a3.metric('Cantidad de retrasos', delivery[delivery['delta_estimated_real'] < 0]['delta_estimated_real'].count())
-#   a4.metric('Porcentaje de retrasos', '{0:.2g}'.format((delivery[delivery['delta_estimated_real'] < 0]['delta_estimated_real'].count()/delivery['delta_estimated_real'].count())*100)+'%')
-#   a5.metric('Tiempo de retraso promedio', '{0:.2g}'.format(delivery[delivery['delta_estimated_real'] < 0]['delta_estimated_real'].mean()))
-#   a6.metric('Promedio de entrega total', '{0:.2g}'.format(delivery['delta_purchase_delivered'].mean()))
-
-  a1.metric('Estimado-Entregado', '{0:.2g}'.format(delivery['delta_estimated_real'].mean())+" d.")
-  a2.metric('Tiempo de entrega', '{0:.2g}'.format(delivery[delivery['delta_estimated_real'] >= 0]['delta_estimated_real'].mean())+" d.")
+  a1.metric('Estimado-Entregado', '{0:.2g}'.format(delivery['delta_estimated_real'].mean())+"d.")
+  a2.metric('Tiempo de entrega', '{0:.2g}'.format(delivery[delivery['delta_estimated_real'] >= 0]['delta_estimated_real'].mean())+"d.")
   a3.metric('Cantidad de retrasos', delivery[delivery['delta_estimated_real'] < 0]['delta_estimated_real'].count())
   a4.metric('% de retrasos', '{0:.2g}'.format((delivery[delivery['delta_estimated_real'] < 0]['delta_estimated_real'].count()/delivery['delta_estimated_real'].count())*100))
-  a5.metric('Tiempo de retraso', '{0:.0g}'.format(delivery[delivery['delta_estimated_real'] < 0]['delta_estimated_real'].mean()*-1)+" d.")
-  a6.metric('Tiempo entrega total', '{0:.2g}'.format(delivery['delta_purchase_delivered'].mean())+" d.")
+  a5.metric('Tiempo de retraso', str(int((delivery[delivery['delta_estimated_real'] < 0]['delta_estimated_real'].mean()*-1)))+'d.')
+#   a5.metric('Tiempo de retraso', str((delivery[delivery['delta_estimated_real'] < 0]['delta_estimated_real'].mean()*-1).round(0))+'d.')
+#   a5.metric('Tiempo de retraso', '{0:.0g}'.format(delivery[delivery['delta_estimated_real'] < 0]['delta_estimated_real'].mean()*-1)+"d.")
+  a6.metric('Tiempo entrega total', str(int((delivery['delta_purchase_delivered'].mean())))+"d.")
 
 
   distance(st.session_state.data_final)
@@ -37,13 +31,16 @@ def run():
 
 
 def filter(df):
-    # df = df.loc[(df.purchase_year.isin(st.session_state.selected_options_year)) & (df.purchase_month_name.isin(st.session_state.selected_options_month))]
-    df = df[df['order_purchase_timestamp'].astype('datetime64[ns]').apply(lambda x: int(x.strftime('%Y'))).isin(st.session_state.selected_options_year)]
-    df = df[df['order_purchase_timestamp'].astype('datetime64[ns]').apply(lambda x: x.strftime('%B')).isin(st.session_state.selected_options_month)]
+    df = df.loc[(df.purchase_year.isin(st.session_state.selected_options_year)) & (df.purchase_month_name.isin(st.session_state.selected_options_month))]
+    # df = df[df['order_purchase_timestamp'].astype('datetime64[ns]').apply(lambda x: int(x.strftime('%Y'))).isin(st.session_state.selected_options_year)]
+    # df = df[df['order_purchase_timestamp'].astype('datetime64[ns]').apply(lambda x: x.strftime('%B')).isin(st.session_state.selected_options_month)]
     return df
 
+
 def value_freight(df):
+
     df = filter(df)
+    
     sales_state = df.loc[:,['order_id', 'payment_value', 'freight_value', 'seller_state', 'order_purchase_timestamp', 'order_status']]
     sales_state = sales_state[sales_state['order_status'] == 'delivered']
     sales_state.drop_duplicates(inplace=True)
@@ -123,13 +120,12 @@ def distance(df):
         key="9"
     )
 
-def total_freight(df):
 
-    df = filter(df)
+def total_freight(df):
 
     freight = value_freight(df)[1]
 
-    grafico_2 = alt.Chart(freight, background="transparent").mark_line().encode(
+    grafico_2 = alt.Chart(freight).mark_line().encode(
         alt.X('order_purchase_timestamp:T', axis=alt.Axis(title='Date')),
         alt.Y('freight_value:Q', axis=alt.Axis(title='Total Freight')),
         color='seller_state',
@@ -137,6 +133,7 @@ def total_freight(df):
         tooltip=['seller_state']
     ).interactive().properties(title="Evolución de Gastos de Flete por Estado")
     st.altair_chart(grafico_2, use_container_width=True)
+
     tabla_10_csv = util.convert_df(freight)
     st.download_button(
         label="Descargar dataset en CSV",

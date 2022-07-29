@@ -1,5 +1,5 @@
 import streamlit as st
-from pages_st import ventas, distribucion, geolocalizacion, machine_learning, segmentacion
+from pages_st import segmentacion_ml, ventas, distribucion, geolocalizacion, machine_learning
 
 
 def run():
@@ -19,6 +19,6 @@ def run():
   elif selected_option == 'predicciones':
     machine_learning.run()
   elif selected_option == 'segmentación':
-    segmentacion.run()
+    segmentacion_ml.run()
 
   
