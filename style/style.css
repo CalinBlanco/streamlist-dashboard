@@ -1,0 +1,111 @@
+/* Move block container higher */
+div.block-container.css-18e3th9.egzxvld2 {
+  margin-top: -3em;
+  /* background-color: whitesmoke; */
+  background-color: #d0d0d0;
+  /* background-color: #fff; */
+}
+/* div.css-1djdyxw.ek41t0m0{
+  color: black;
+} */
+/* div.css-1fcdlhce1s6o5jp0,  */
+/* ul.streamlit-expander{ */
+#stExpander{
+  position:absolute;
+  top:0px;
+}
+
+
+div.css-1pd56a0.e1tzin5v0 {
+  margin-top: -4em;
+}
+
+/* Adjustments for the logo image*/
+
+img {
+  display: block;
+  margin-top: 1.5em;
+}
+
+/* Centering text in each gray box */
+div.css-1ht1j8u.e16fv1kl0 {
+  text-align: center;
+}
+
+/* Third line of Row */
+div.css-wnm74r.e16fv1kl3 {
+  margin-left: 10%;
+  margin-right: 10%;
+}
+
+
+div.css-1gf0e5q.e16fv1kl2, div.css-1ht1j8u.e16fv1kl3{
+    color: black;
+    text-align: center;
+    /* justify-content: center; */
+}
+
+/* div.css-1l269bu.e1tzin5v2 { */
+div.css-j5r0tf.e1tzin5v2, div.css-1l269bu.e1tzin5v2 {
+    color: black;
+    background-color: #b6b6b6;
+    padding: 1% 1% 1% 1%;
+    border-radius: 5px;
+}
+
+
+/* Hide hamburger menu and footer */
+div.css-r698ls.e8zbici2 {
+  display: none;
+}
+
+footer.css-ipbk5a.egzxvld4 {
+  display: none;
+}
+
+footer.css-12gp8ed.eknhn3m4 {
+  display: none;
+}
+
+div.vg-tooltip-element {
+  display: none;
+}
+
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+
+div.st-cu.st-c7.st-be.st-cv.st-cw {visibility: hidden;}
+div.st-cu.st-c7.st-be.st-cv.st-cw:before {content: "Selecciona uno o varias opciones"; visibility: visible;}
+
+/* Gráficos */
+div.css-1a32fsj.e19lei0e0{
+  color: black;
+  background-color: #e7e7e7;
+  padding: 1% 1% 1% 1%;
+  border-radius: 5px;
+}
+
+.stButton>button {
+  color: #ffffff;
+  /* border-radius: 20%; */
+  background-color: rgb(255, 49, 49);
+  height: 100%;
+  width: 100%;
+  }
+
+
+
+
+.stButton>button:link, .stButton>button:visited {
+  background-color: #f44336;
+  color: white;
+  padding: 14px 25px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.stButton>button:hover, .stButton>button:active:focus {
+  color: white;
+  background-color: red;
+}
