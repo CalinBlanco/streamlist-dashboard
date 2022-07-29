@@ -1,4 +1,3 @@
-from matplotlib.pyplot import xlabel
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -142,7 +141,8 @@ def run():
     # Fila 4
     ## ! Gráfico 3: Nro de Órdenes por Día de la Semana y Hora del Día
 
-    byWkdHr = data_final.loc[(data_final.purchase_year.isin(st.session_state.selected_options_year)) & data_final.purchase_month_name.isin(st.session_state.selected_options_month)].groupby(["delivered_customer_dayofweek", "delivered_customer_hour"]).count()["order_id"].unstack()
+    # byWkdHr = data_final.loc[(data_final.purchase_year.isin(st.session_state.selected_options_year)) & data_final.purchase_month_name.isin(st.session_state.selected_options_month)].groupby(["delivered_customer_dayofweek", "delivered_customer_hour"]).count()["order_id"].unstack()
+    byWkdHr = data_final.loc[(data_final.purchase_year.isin(st.session_state.selected_options_year)) & data_final.purchase_month_name.isin(st.session_state.selected_options_month)].groupby(["purchase_dayofweek", "purchase_hour"]).count()["order_id"].unstack()
 
     fig_3 = px.imshow(byWkdHr, text_auto=True, height = 400, zmin=250, zmax=0,color_continuous_scale='YlGn')
     fig_3.update_layout(

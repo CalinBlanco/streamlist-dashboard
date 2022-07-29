@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 from geopy import distance as dis
+import plotly.express as px
 
 from application import utils as util
 
@@ -24,6 +25,8 @@ def run():
 
 
   distance(st.session_state.data_final)
+
+  delivered_by_week_hour(st.session_state.data_final)
 
   total_freight(st.session_state.data_final)
 
@@ -188,3 +191,44 @@ def load_delivery(df):
     df_delivered['delta_estimated_real'] = df_delivered['delta_estimated_real'].apply(lambda x: x.days)
     df_delivered['delta_purchase_delivered'] = df_delivered['delta_purchase_delivered'].apply(lambda x: x.days)
     return df_delivered
+
+def delivered_by_week_hour(data_final):
+    byWkdHr = data_final.loc[(data_final.purchase_year.isin(st.session_state.selected_options_year)) & data_final.purchase_month_name.isin(st.session_state.selected_options_month)].groupby(["delivered_customer_dayofweek", "delivered_customer_hour"]).count()["order_id"].unstack()
+
+    fig_12 = px.imshow(byWkdHr, text_auto=True, height = 400, zmin=250, zmax=0,color_continuous_scale='YlGn')
+    fig_12.update_layout(
+        font_size=12,
+        hoverlabel=dict(
+            bgcolor="white",
+            font_size=12,
+            font_color="black"
+            # font_family="Rockwell"
+        ),
+        title="Nro de Entregas por Día de la Semana y Hora del Día",
+        yaxis = dict(
+            tickmode = 'array',
+            tickvals = ["6", "5", "4", "3", "2", "1", "0"],
+            ticktext = ['Sun', 'Sat', 'Fri', 'Thu', 'Wed', 'Tue', 'Mon']
+        ),
+        font_color='black',
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+    )
+
+    fig_12.update_traces(
+        hovertemplate= "Hour: %{x} <br> Day: %{y} <br> Orders delivered: %{z}"
+    )
+    fig_12.update_xaxes(title_text="Horas")
+    fig_12.update_yaxes(title_text="Días")
+
+    st.plotly_chart(fig_12, use_container_width=True)
+    
+    tabla_12_csv = util.convert_df(byWkdHr)
+    st.download_button(
+        label="Descargar dataset en CSV",
+        data=tabla_12_csv,
+        file_name='nro_entregas_por_dia_de_semana_y_hora_del_dia.csv',
+        mime='text/csv',
+        key="12"
+    )
+    

@@ -1,4 +1,5 @@
 import streamlit as st
+# from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 import pandas as pd
@@ -57,6 +58,7 @@ def training(regression):
 
 def random_forest(X_train,Y_train):
   model2 = RandomForestRegressor(n_estimators=100, random_state=42)
+  # model2 = LinearRegression()
   y2 = model2.fit(X_train, Y_train)
   # y2_preds = y2.predict(X_test)
   return y2
