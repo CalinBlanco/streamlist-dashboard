@@ -32,7 +32,7 @@ def run():
   # kpi_funtion = kpi_funtion
 
   with st.sidebar:
-    st.title("Proyecto - Grupo 2")
+    st.title("Análisis de Mercados E-Commerce")
     st.image(logo)
     selected = option_menu("Dashboard", kpi_menu, 
         default_index=0,menu_icon="speedometer",icons=kpi_icon)
